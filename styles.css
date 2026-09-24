@@ -16,3 +16,30 @@ dialog{border:1px solid #5a6356;border-radius:14px;background:#1d2923;color:#f3e
 .all-models{display:block;text-align:center;padding:12px 0 0;color:#93a497;font-size:10px}.all-models:hover{color:#e8af78}
 
 .roster-card img{top:44%;transform:translateY(-34%)}
+/* Season 0.3 — progression, readable feedback and four touch actions. */
+.progress-panel{border:1px solid #486153;border-radius:8px;background:#22392e;padding:13px 15px;margin:15px 0 18px}
+.progress-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10px;letter-spacing:1.2px;color:#bdcdbf}
+.progress-heading b{font-size:23px;color:#efc397;letter-spacing:0}.progress-heading small{font-size:8px;letter-spacing:1px}
+.career-track{height:4px;background:#415446;margin:10px 0;border-radius:3px;overflow:hidden}.career-track i{display:block;height:100%;background:#e7b587;border-radius:3px}
+.progress-panel p{font-size:11px;color:#c9d7cd;margin:0;line-height:1.45}.progress-panel p b{color:#fff3d9}
+.unlock-hint{padding:10px 13px;margin:9px 0 0;border-radius:5px;background:#2a3a30;color:#c4d5c4;font-size:11px;line-height:1.5}.unlock-hint.locked{background:#3a332a;color:#eac4a0}
+.locked-card img{filter:saturate(.3) brightness(.68)}.unlock-cost{position:absolute;top:9px;right:7px;z-index:2;padding:4px 5px;font-size:8px;background:#182720e8;color:#f1d6b2;border-radius:3px}
+.roster-card.selected.locked-card{border-color:#b2bbad;box-shadow:0 0 0 1px #b2bbad}
+.camera-mode{position:absolute;right:53px;top:0;min-width:64px;min-height:42px;padding:0 8px;border:1px solid #a8bfaf66;border-radius:22px;background:#18362eda;color:#efeee3;font-size:9px;font-weight:700;letter-spacing:.5px}
+.shot-advice{position:absolute;top:120px;left:max(16px,env(safe-area-inset-left));max-width:210px;font-size:9px;line-height:1.5;color:#f5f0e4;text-shadow:0 1px 3px #17211b;pointer-events:none;padding:5px 8px;border-radius:4px;background:#18362eac}
+.shot-advice:empty{display:none}.shot-feedback{position:absolute;left:50%;bottom:130px;transform:translateX(-50%);max-width:44vw;padding:6px 10px;background:#24372edb;color:#f7cd93;border-radius:4px;font-size:11px;white-space:nowrap;pointer-events:none}.shot-feedback:empty{display:none}.shot-feedback[data-quality=good]{color:#b8e0a6}
+.action-controls{width:235px;height:155px}.action.shoot{bottom:0}.action.pass{bottom:0;right:99px}.action.dash{width:55px;height:55px;bottom:76px;right:84px;background:#1d3c39de;border:1px solid #b9d1c39c;color:#e6ede1}.action.dash b{font-size:29px}.action.super{top:20px;right:161px}.action:disabled{opacity:.42;cursor:default}
+.charge-wrap{bottom:68px}.charge-track{width:160px;height:11px}.charge-track .green-zone{top:0;height:100%}.charge-wrap>span{font-size:9px;letter-spacing:.3px}
+.unlock-reward{margin:16px 0 20px;padding:16px;text-align:center;border:1px solid #9f9562;background:#2f4836;border-radius:8px}.unlock-reward>span{font-size:9px;letter-spacing:2px;color:#d1be83}.unlock-reward>b{display:block;margin-top:6px;font-size:28px;color:#f3cf94}.unlock-reward p{font-size:12px;margin:7px 0 0}.result-progress{text-align:center;color:#c9d2c7;font-size:12px;margin-bottom:20px}
+@media(max-width:610px){.progress-panel{margin:8px 0 16px}.camera-mode{right:48px;min-width:57px;font-size:8px}.shot-advice{left:12px;max-width:175px}.shot-feedback{font-size:10px;bottom:145px;max-width:80vw}.charge-wrap{bottom:95px}.roster-card[data-player=mate] img{height:100%;top:0;transform:none;object-fit:cover}}
+@media(max-height:480px) and (orientation:landscape){.shot-advice{top:104px;font-size:8px;max-width:180px}.shot-feedback{bottom:112px;font-size:10px}.charge-wrap{bottom:57px}.keyboard-hint{font-size:8px}.camera-mode{min-height:38px}.action-controls{bottom:18px}}
+
+.action.dash.cooldown{opacity:.5}
+@media(max-height:480px) and (orientation:landscape){
+ #modal:has(.result-score){padding:13px 22px;width:470px;max-width:84vw}
+ #modal .result-title{margin:2px 25px 5px}#modal h2.result-title{font-size:19px}
+ .result-score{font-size:36px;margin:3px 0 6px}.result-stats{font-size:8px;gap:12px}.result-stats b{font-size:17px;margin-bottom:2px}
+ .unlock-reward{padding:7px;margin:9px 0}.unlock-reward>span{font-size:7px}.unlock-reward>b{font-size:21px;margin-top:2px}.unlock-reward p{font-size:10px;margin:2px 0}
+ #modal:has(.result-score) .primary{min-height:40px;padding:9px 12px;margin-top:8px;font-size:10px}
+ #modal:has(.result-score) .secondary{min-height:33px;padding:7px;margin-top:7px;font-size:10px}.result-progress{margin:9px 0;font-size:11px}
+}

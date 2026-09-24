@@ -1,5 +1,5 @@
 import * as T from '../vendor/three.module.min.js';
-import {APPEARANCE} from './appearance.js';
+import {APPEARANCE} from './appearance.js?v=0.3.0';
 const TAU=Math.PI*2;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*t;
@@ -135,11 +135,11 @@ function fabricTexture(referee=false){
  for(let y=0;y<256;y+=4)for(let x=0;x<256;x+=4){ctx.fillStyle=(x+y)%8?'#0000000c':'#00000019';ctx.fillRect(x+(y%8)/4,y,1,2);}
  const tex=new T.CanvasTexture(canvas);tex.colorSpace=T.SRGBColorSpace;tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.repeat.set(referee?1:2,2);tex.anisotropy=2;return tex;
 }
-function numberTexture(number){const c=document.createElement('canvas');c.width=256;c.height=256;const ctx=c.getContext('2d');ctx.clearRect(0,0,256,256);ctx.fillStyle='#f0e6d3';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='900 170px Arial';ctx.fillText(String(number),128,132);const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;return tex;}
+function numberTexture(number,team){const c=document.createElement('canvas');c.width=256;c.height=256;const ctx=c.getContext('2d');ctx.clearRect(0,0,256,256);ctx.fillStyle=team===0?'#274d43':'#f0e6d3';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='900 170px Arial';ctx.fillText(String(number),128,132);const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;return tex;}
 export function createCharacter(p,team=0){
  const a=APPEARANCE[p.id],root=new T.Group();root.scale.setScalar(p.scale);const body=new T.Group();root.add(body);
- const skin=material(a.skin,{roughness:.72}),cloth=material(p.referee?0xffffff:team===0?0xb65329:0x286775,{map:fabricTexture(p.referee),roughness:.95}),trim=material(0xe4d9bd),dark=material(0x242c2c),sole=material(0xd3d1c2),sock=material(0xdbd9d0),rubber=material(0x43372c);
- const torsoRings=[[.985,.161,.106],[1.01,.159,.105],[1.06,.150,.101],[1.17,.166,.108],[1.31,.193,.118],[1.40,.211,.106],[1.47,.186,.089],[1.515,.069,.058]].map(([y,x,z])=>[y,x*a.build,z*a.build]);
+ const skin=material(a.skin,{roughness:.72}),cloth=material(p.referee?0xffffff:team===0?0xd4cfc0:0x205c79,{map:fabricTexture(p.referee),roughness:.95}),trim=material(team===0?0x34554e:0xe4d9bd),dark=material(0x242c2c),sole=material(0xd3d1c2),sock=material(0xdbd9d0),rubber=material(0x43372c);
+ const torsoRings=[[.985,.161,.106],[1.01,.159,.105],[1.06,.150,.101],[1.17,.166,.108],[1.31,.186,.111],[1.40,.199,.102],[1.47,.180,.085],[1.515,.069,.058]].map(([y,x,z])=>[y,x*a.build,z*a.build]);
  mesh(body,ringsGeometry(torsoRings),skin);
  mesh(body,ringsGeometry(torsoRings.slice(0,-1).map(([y,x,z])=>[y,x+.007,z+.009]),36,(x,y,z,ang,v)=>[y-(v>.8?(v-.8)/.2*.080*Math.max(0,Math.cos(ang))*(1-Math.abs(Math.sin(ang))):0),z+Math.sin(ang*11+v*2)*.0015]),cloth);
 
@@ -152,12 +152,12 @@ export function createCharacter(p,team=0){
  for(const s of [-1,1]){const points=[[s*.191*a.build,1.411,-.075],[s*.146*a.build,1.47,-.039],[s*.133*a.build,1.461,.045],[s*.102*a.build,1.412,.091],[s*.052*a.build,1.385,.114],[0,1.377,.119*a.build]];curve(body,trim,points,.005,28);}
  mesh(body,ringsGeometry([[1.48,a.neck*1.12,.058],[1.52,a.neck,.056],[1.57,a.neck*.85,.052]],24),skin);
  mesh(body,ringsGeometry([[.958,.173*a.build,.115*a.build],[.999,.173*a.build,.115*a.build]],28),p.referee?dark:cloth);
- const head=createHead(p,a);head.position.y=1.665;body.add(head);
+ const head=createHead(p,a);head.position.y=1.68;head.scale.set(.90,.82,.88);body.add(head);
  const arms=[],legs=[],elbows=[],knees=[];
  for(const s of [-1,1]){
-  const arm=new T.Group();arm.position.set(s*.206*a.shoulders*a.build,1.426,0);arm.rotation.z=s*.055;arm.rotation.x=-.05;body.add(arm);arms.push(arm);
-  ellipsoid(arm,skin,0,-.012,0,.057*a.build,.052,.054*a.build);
-  mesh(arm,ringsGeometry([[-.005,.044,.047],[-.045,.059,.057],[-.115,.053,.052],[-.21,.040,.040],[-.28,.035,.033]].map(([y,x,z])=>[y,x*a.build,z*a.build]),24),skin);
+  const arm=new T.Group();arm.position.set(s*.200*a.shoulders*a.build,1.425,0);arm.rotation.z=s*.055;arm.rotation.x=-.05;body.add(arm);arms.push(arm);
+  ellipsoid(arm,skin,0,-.012,0,.053*a.build,.050,.050*a.build);
+  mesh(arm,ringsGeometry([[-.005,.044,.047],[-.045,.053,.051],[-.115,.048,.047],[-.21,.040,.040],[-.28,.035,.033]].map(([y,x,z])=>[y,x*a.build,z*a.build]),24),skin);
   ellipsoid(arm,skin,0,-.282,0,.034*a.build,.039,.034*a.build);
   if(p.referee)mesh(arm,ringsGeometry([[-.012,.053,.054],[-.10,.059,.057],[-.145,.054,.054]],24),cloth);
   const forearm=new T.Group();forearm.position.y=-.282;forearm.rotation.x=-.16;arm.add(forearm);elbows.push(forearm);
@@ -177,26 +177,26 @@ export function createCharacter(p,team=0){
   mesh(calf,ringsGeometry([[0,.043,.040],[-.09,.054,.043],[-.18,.047,.038],[-.30,.029,.030],[-.40,.025,.025]].map(([y,x,z])=>[y,x*a.build,z*a.build,y>-.23?-.006:0]),24),skin);
   mesh(calf,ringsGeometry([[-.28,.032,.031],[-.39,.029,.029]],22),sock);
   const shoe=new T.Group();shoe.position.set(0,-.441,.035);calf.add(shoe);
-  ellipsoid(shoe,dark,0,.015,.008,.049,.044,.096);ellipsoid(shoe,sole,0,-.013,.013,.050,.014,.099);
-  ellipsoid(shoe,rubber,0,-.022,.013,.047,.007,.094);
+  ellipsoid(shoe,dark,0,.015,.008,.050,.043,.113);ellipsoid(shoe,sole,0,-.013,.013,.052,.014,.116);
+  ellipsoid(shoe,rubber,0,-.022,.013,.050,.007,.111);
   for(let f=0;f<4;f++)curve(shoe,trim,[[-.025,.044-f*.001,-.012+f*.012],[0,.048-f*.001,f*.012],[.025,.044-f*.001,-.012+f*.012]],.002,5);
   batch(shoe);batch(calf);batch(leg);
  }
- if(!p.referee){const numberMat=new T.MeshStandardMaterial({map:numberTexture(p.number),transparent:true,alphaTest:.3,roughness:.9,depthWrite:false});const front=mesh(body,new T.PlaneGeometry(.130,.154),numberMat,0,1.22,.145*a.build);const back=mesh(body,new T.PlaneGeometry(.168,.195),numberMat,0,1.25,-.141*a.build);back.rotation.y=Math.PI;}
+ if(!p.referee){const numberMat=new T.MeshStandardMaterial({map:numberTexture(p.number,team),transparent:true,alphaTest:.3,roughness:.9,depthWrite:false});const front=mesh(body,new T.PlaneGeometry(.130,.154),numberMat,0,1.22,.145*a.build);const back=mesh(body,new T.PlaneGeometry(.168,.195),numberMat,0,1.25,-.141*a.build);back.rotation.y=Math.PI;}
  else{curve(body,dark,[[-.050,1.50,.047],[0,1.251,.144],[.05,1.5,.047]],.003);mesh(body,new T.BoxGeometry(.026,.036,.017),material(0xa2a9a6,{metalness:.8,roughness:.3}),0,1.246,.151);}
  batch(body);
  const shadow=new T.Mesh(new T.CircleGeometry(.32,32),new T.MeshBasicMaterial({color:0x101615,transparent:true,opacity:.23,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.010;root.add(shadow);
  const ring=new T.Mesh(new T.RingGeometry(.36,.382,40),new T.MeshBasicMaterial({color:team===0?0xf6d091:0x87d5ce,transparent:true,opacity:.85,side:T.DoubleSide,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.y=.018;root.add(ring);ring.visible=!p.referee;
  root.userData={p,body,head,arms,legs,elbows,knees,ring,shadow,appearance:a};return root;
 }
-export function animateCharacter(root,time,speed,air=0,shooting=0,dribbling=false){
- const a=root.userData,moving=Math.min(1,speed),phase=time*10,stride=Math.sin(phase)*moving*.50;
- a.legs[0].rotation.x=stride;a.legs[1].rotation.x=-stride;
+export function animateCharacter(root,time,speed,air=0,shooting=0,dribbling=false,shotKind='mid'){
+ const a=root.userData,moving=Math.min(1,speed),phase=time*10,stride=Math.sin(phase)*moving*.43;
+ a.legs[0].rotation.x=stride-.035;a.legs[1].rotation.x=-stride-.035;
  a.arms[0].rotation.x=-stride*.7;a.arms[1].rotation.x=stride*.7;
- for(let i=0;i<2;i++){if(a.knees)a.knees[i].rotation.x=Math.max(0,Math.sin(phase+i*Math.PI))*.82*moving;if(a.elbows)a.elbows[i].rotation.x=-.14-moving*.28;a.arms[i].rotation.z=(i===0?-1:1)*(.055+moving*.03);}
+ for(let i=0;i<2;i++){if(a.knees)a.knees[i].rotation.x=.065+Math.max(0,Math.sin(phase+i*Math.PI))*.88*moving;if(a.elbows)a.elbows[i].rotation.x=-.14-moving*.28;a.arms[i].rotation.z=(i===0?-1:1)*(.055+moving*.03);}
  if(dribbling){a.arms[1].rotation.x=-.33+Math.sin(time*13)*.12;if(a.elbows)a.elbows[1].rotation.x=-.38+Math.sin(time*13)*.20;}
- if(shooting>0){for(let i=0;i<2;i++){a.arms[i].rotation.x=-2.45*shooting;if(a.elbows)a.elbows[i].rotation.x=-.3*shooting;}}
- a.body.position.y=air+Math.abs(Math.sin(phase))*.020*moving;a.body.rotation.z=stride*.022;a.body.rotation.x=moving*.045;
+ if(shooting>0){for(let i=0;i<2;i++){const balance=i===0&&(shotKind==='dunk'||shotKind==='layup');a.arms[i].rotation.x=-.10-(balance?1.1:2.45)*shooting;if(a.elbows)a.elbows[i].rotation.x=-(balance?.6:.3)*shooting;}}
+ a.body.position.y=air-.012+Math.abs(Math.sin(phase))*.015*moving;a.body.rotation.z=stride*.028;a.body.rotation.y=Math.sin(phase)*moving*.065;a.body.rotation.x=.025+moving*.055;
  a.head.rotation.y=Math.sin(time*.65)*.018*(1-moving);a.shadow.scale.setScalar(1-air*.16);a.shadow.material.opacity=Math.max(.06,.23-air*.1);
 }
 export function disposeObject(root){const geometries=new Set(),materials=new Set(),textures=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>{if(m.map)textures.add(m.map);m.dispose();});textures.forEach(t=>t.dispose());}

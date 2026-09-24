@@ -10,4 +10,7 @@ export const PLAYERS=[
  {id:'piniv',name:'Пинив',sourceOrder:6,ovr:54,height:'Высокий',scale:1.065,number:6,role:'Под кольцом',color:'#c4b6a5',photo:'assets/portraits/piniv.jpg',photoPosition:'50% 28%',stats:{mid:39,three:34,handle:36,jump:60,dunk:59,speed:52,defense:49,pass:48,stamina:58},super:{id:'anchor',name:'Крепкая стойка',description:'7 секунд увеличенного радиуса подбора и усиленной защиты под кольцом.',duration:7}}
 ];
 export const REFEREE={id:'askar',name:'Аскар',sourceOrder:5,role:'Судья',height:'Средний',scale:.96,number:0,photo:'assets/portraits/askar.jpg',photoPosition:'50% 28%',referee:true};
-export const byId=id=>PLAYERS.find(p=>p.id===id);
+// The school teammate is available from the start and is not an unlockable hero.
+export const TEAMMATE={id:'mate',name:'Напарник',ovr:70,height:'Средний',scale:1,number:12,role:'Надёжный партнёр',color:'#bdd7ca',photo:'assets/teammate.svg',photoPosition:'50% 50%',stats:{mid:70,three:63,handle:70,jump:68,dunk:56,speed:74,defense:68,pass:82,stamina:85},super:{id:'secondwind',name:'Поддержка',description:'Восстанавливает выносливость и помогает в защите.',duration:7}};
+export const GUEST={id:'guest',name:'Игрок лицея',ovr:58,height:'Средний',scale:.98,number:9,role:'Игрок лицея',color:'#afc9d7',photo:'assets/teammate.svg',photoPosition:'50% 50%',stats:{mid:57,three:46,handle:55,jump:60,dunk:46,speed:66,defense:56,pass:65,stamina:76},super:{id:'focus',name:'Собранность',description:'Прибавка к точности среднего броска.',duration:5}};
+export const byId=id=>[...PLAYERS,TEAMMATE,GUEST].find(p=>p.id===id);
