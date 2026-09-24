@@ -1,10 +1,10 @@
 {
   "name": "svoya-liga",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "python3 -m http.server 8000",
-    "test": "node tests/logic.mjs"
+    "test": "node tests/logic.mjs && node tests/league.mjs"
   }
 }
