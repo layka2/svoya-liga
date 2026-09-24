@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {CourtGame} from '../src/game.js';
 import {byId,PLAYERS} from '../src/roster.js';
+import {chooseDunk,dribbleSample,dunkSample,ballisticPoint,logicalStickDelta} from '../src/motion.js';
 import {shotProfile,botRelease} from '../src/mechanics.js';
 import {PROGRESS_KEY,readProgress,writeProgress,isUnlocked,recordResult,normalizeProgress} from '../src/progression.js';
 import * as T from '../vendor/three.module.min.js';
@@ -9,10 +10,18 @@ globalThis.document={getElementById(id){if(!nodes.has(id))nodes.set(id,node());r
 function mesh(){const m=new T.Group();m.userData={body:new T.Group(),head:new T.Group(),elbows:[new T.Group(),new T.Group()],knees:[new T.Group(),new T.Group()],arms:[new T.Group(),new T.Group()],legs:[new T.Group(),new T.Group()],ring:{material:{color:new T.Color()},scale:new T.Vector3()},shadow:{material:{opacity:.2},scale:new T.Vector3()}};return m;}
 function createMatch(ids=['piniv','mate','aziom','guest']){
  let g=Object.create(CourtGame.prototype);Object.assign(g,{time:0,score:[0,0],clock:180,shotClock:24,paused:false,running:true,orientationBlocked:false,overtime:false,input:{x:0,z:0},keys:new Set(),chargeStart:null,chargeMovement:0,inboundUntil:0,noticeTimer:0,feedbackUntil:0,soundOn:false,matchId:'test',callbacks:{onEnd(r){g.result=r;}},referee:mesh(),ballMesh:new T.Group(),players:[],possession:0});
- g.players=ids.map((id,i)=>({definition:byId(id),team:i<2?0:1,index:i,x:0,z:0,vx:0,vz:0,energy:0,stamina:100,superUntil:0,stealUntil:0,blockUntil:0,blockReady:0,shootUntil:0,passUntil:0,stunUntil:0,burstUntil:0,burstReady:0,fakeUntil:0,fakeReady:0,catchUntil:0,protectedUntil:0,air:0,think:.15+i*.08,holdTime:0,settled:1,gait:i*.7,aiShot:null,reactionAt:0,stats:{points:0,assists:0,steals:0,blocks:0,rebounds:0,shots:0,made:0,threes:0,threesMade:0},mesh:mesh()}));g.user=g.players[0];g.ball={mode:'held',owner:g.user,pos:new T.Vector3(),previousPass:null};g.resetPositions(0);return g;
+ g.players=ids.map((id,i)=>({definition:byId(id),team:i<2?0:1,index:i,x:0,z:0,vx:0,vz:0,energy:0,stamina:100,hand:1,dribbleClock:0,cross:null,crossReady:0,action:null,approachSpeed:0,approachAt:-10,cutUntil:0,superUntil:0,stealUntil:0,blockUntil:0,blockReady:0,shootUntil:0,passUntil:0,stunUntil:0,burstUntil:0,burstReady:0,fakeUntil:0,fakeReady:0,catchUntil:0,protectedUntil:0,air:0,think:.15+i*.08,holdTime:0,settled:1,gait:i*.7,aiShot:null,reactionAt:0,stats:{points:0,assists:0,steals:0,blocks:0,rebounds:0,shots:0,made:0,threes:0,threesMade:0},mesh:mesh()}));g.user=g.players[0];g.ball={mode:'held',owner:g.user,pos:new T.Vector3(),previousPass:null};g.resetPositions(0);return g;
 }
 function seedRandom(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
 const originalRandom=Math.random;
+// Stationary dribble must still animate; motion and grip share the same phase.
+const idleA=dribbleSample(0,0),idleB=dribbleSample(.18,0);assert.notEqual(idleA.ball[1],idleB.ball[1]);assert.notEqual(idleA.palm[1],idleB.palm[1]);
+for(let i=0;i<100;i++){const d=dribbleSample(i/100,3.5);assert(d.ball[1]>=.125);if(d.contact)assert(Math.abs(d.palm[1]-d.ball[1]-.115)<1e-6);}
+assert.equal(chooseDunk({rating:75,speed:0}),'two');assert.equal(chooseDunk({rating:80,speed:2}),'one');assert.equal(chooseDunk({rating:95,speed:3}),'tomahawk');assert.equal(chooseDunk({rating:95,speed:2,side:1.2}),'reverse');
+assert(dunkSample('tomahawk',.40).ball[2]<0);assert(dunkSample('reverse',.6).turn>3);assert.equal(dunkSample('two',1).lift,0);
+const start={x:0,y:2.2,z:0},target={x:6,y:3.05,z:0};assert.deepEqual(ballisticPoint(start,target,1.3,0),start);assert(Math.abs(ballisticPoint(start,target,1.3,1.3).y-3.05)<1e-10);assert(ballisticPoint(start,target,1.3,.65).y>3.5);
+assert.deepEqual(logicalStickDelta(0,30,true),{x:30,z:-0});assert.deepEqual(logicalStickDelta(-30,0,true),{x:0,z:30});console.log('PASS synchronized idle dribble, four dunk styles, real ball trajectory and rotated controls');
+
 try{
  const base={rating:96,distance:6.5,kind:'three',timing:.72},best=shotProfile(base);
  assert(best.chance<.6&&best.chance>.45);assert(shotProfile({...base,rating:34}).chance<best.chance*.6);
@@ -37,10 +46,21 @@ try{
  for(const [x,points] of [[4,2],[1,3]]){
   g=createMatch();g.user.x=x;g.user.z=0;g.players[2].x=g.players[3].x=-8;g.shoot(g.user,.72);for(let i=0;i<180&&g.ball.mode!=='held';i++){g.time+=1/60;g.updateBall(1/60);}assert.equal(g.score[0],points);assert.equal(g.ball.owner.team,1);assert(g.ball.owner.protectedUntil>g.time);
  }console.log('PASS 2/3 points, ball through hoop and protected inbound');
- g=createMatch();g.players[2].x=g.players[3].x=8;const user=g.user;assert(g.passBall(user,g.players[1]));for(let i=0;i<60&&g.ball.mode==='pass';i++){g.time+=1/60;g.updateBall(1/60);}assert.equal(g.ball.owner,g.players[1]);g.pressPass();for(let i=0;i<60&&g.ball.mode==='pass';i++){g.time+=1/60;g.updateBall(1/60);}assert.equal(g.ball.owner,user);assert.equal(g.user,user);
+ // The ball remains in the hands during gathering; blocks can interrupt a dunk before the rim.
+ g=createMatch();g.user.x=4;g.players[2].x=g.players[3].x=-8;g.updateBall(0);g.shoot(g.user,.72);g.time=.29;g.updateBall(.29);assert.equal(g.ball.mode,'gather');assert.equal(g.ball.owner,g.user);g.time=.32;g.updateBall(.03);assert.equal(g.ball.mode,'shot');assert.equal(g.ball.owner,null);
+ for(const outcome of ['make','miss','block']){
+  Math.random=()=>outcome==='miss'?.999:.001;g=createMatch(['laika','mate','kempil','guest']);g.user.x=6.9;g.user.z=0;g.user.vx=3.8;g.players[2].x=g.players[3].x=-8;g.updateBall(0);assert(g.shoot(g.user,.72));assert.equal(g.ball.mode,'dunk');
+  g.time=.40;g.updateBall(.40);
+  if(outcome==='block'){const defender=g.players[2];defender.x=g.ball.pos.x;defender.z=g.ball.pos.z;defender.blockStart=g.time-.25;defender.blockUntil=g.time+.3;g.updateBall(0);assert.equal(g.ball.mode,'loose');assert.equal(defender.stats.blocks,1);}
+  for(let i=0;i<70;i++){g.time+=1/60;g.updateBall(1/60);}
+  assert.equal(g.score[0],outcome==='make'?2:0);assert.equal(g.user.stats.dunks||0,outcome==='make'?1:0);
+ }
+ Math.random=()=>.001;g=createMatch();g.time=1;assert(g.crossover());assert(!g.crossover());const originalHand=g.user.hand;g.update(.5);assert.equal(g.user.hand,-originalHand);assert.equal(g.user.cross,null);
+ console.log('PASS gathering, dunk completion/miss/block and crossover cooldown');
+ g=createMatch();g.players[2].x=g.players[3].x=8;const user=g.user;assert(g.passBall(user,g.players[1]));for(let i=0;i<60&&['passGather','pass'].includes(g.ball.mode);i++){g.time+=1/60;g.updateBall(1/60);}assert.equal(g.ball.owner,g.players[1]);g.pressPass();for(let i=0;i<60&&['passGather','pass'].includes(g.ball.mode);i++){g.time+=1/60;g.updateBall(1/60);}assert.equal(g.ball.owner,user);assert.equal(g.user,user);
  // Stay on the pass line at 240 FPS: each defender gets one chance, not 240 chances.
- g=createMatch();g.user.x=-3;g.user.z=0;g.players[1].x=3;g.players[1].z=0;g.players[2].x=0;g.players[2].z=0;g.players[3].z=4;Math.random=()=>.99;g.passBall(g.user,g.players[1]);const flight=g.ball;let randomCalls=0;Math.random=()=>{randomCalls++;return .99;};for(let i=0;i<240&&g.ball.mode==='pass';i++){g.time+=1/240;g.updateBall(1/240);}assert.equal(randomCalls,1);assert.deepEqual(flight.attempted,[2]);assert.equal(g.ball.owner,g.players[1]);
- g=createMatch();g.players[2].x=g.players[3].x=8;g.passBall(g.user,g.players[1]);g.players[1].x=8;for(let i=0;i<60&&g.ball.mode==='pass';i++){g.time+=1/60;g.updateBall(1/60);}assert.equal(g.ball.mode,'loose');console.log('PASS passing, requesting, one intercept attempt and non-homing missed catch');
+ g=createMatch();g.user.x=-3;g.user.z=0;g.players[1].x=3;g.players[1].z=0;g.players[2].x=0;g.players[2].z=0;g.players[3].z=4;Math.random=()=>.99;g.passBall(g.user,g.players[1]);const flight=g.ball;let randomCalls=0;Math.random=()=>{randomCalls++;return .99;};for(let i=0;i<240&&['passGather','pass'].includes(g.ball.mode);i++){g.time+=1/240;g.updateBall(1/240);}assert.equal(randomCalls,1);assert.deepEqual(flight.attempted,[2]);assert.equal(g.ball.owner,g.players[1]);
+ g=createMatch();g.players[2].x=g.players[3].x=8;g.passBall(g.user,g.players[1]);g.players[1].x=8;for(let i=0;i<60&&['passGather','pass'].includes(g.ball.mode);i++){g.time+=1/60;g.updateBall(1/60);}assert.equal(g.ball.mode,'loose');console.log('PASS passing, requesting, one intercept attempt and non-homing missed catch');
  g=createMatch();g.shotClock=.01;g.update(.02);assert.equal(g.ball.owner.team,1);assert.equal(g.shotClock,24);
  g=createMatch();g.clock=0;g.score=[2,2];g.update(.02);assert(g.overtime);g.addScore(g.user,2,false,null);assert(g.result.won&&g.result.completed);assert.deepEqual(g.result.score,[4,2]);console.log('PASS shot clock and completed sudden death');
  for(const hero of PLAYERS){g=createMatch([hero.id,'mate','guest','aziom']);g.user.energy=100;assert(g.activateSuper());assert(!g.activateSuper());assert.equal(g.user.energy,0);}console.log('PASS all six super abilities');
