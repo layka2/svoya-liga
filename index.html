@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#151a1a"><meta name="description" content="Своя лига — баскетбол 2 на 2 с друзьями в роли персонажей.">
+ <title>Своя лига · Баскетбол 2×2</title><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+ <main id="menu">
+  <header class="topbar"><a class="brand" href="./" aria-label="Своя лига — главная"><span class="brand-mark">↗</span> СВОЯ ЛИГА</a><span class="edition">БАСКЕТБОЛ · 2 НА 2</span><button id="help" class="text-button">Как играть <span>↗</span></button></header>
+  <section class="intro"><div><p class="eyebrow">ЗНАКОМЫЕ ЛИЦА. СВОЙ БАСКЕТБОЛ.</p><h1>Твой двор.<br><span>Твоя команда.</span></h1></div><p class="intro-note">Шесть игроков. Семь характеров.<br>Выбери своего и выходи на площадку.</p></section>
+  <section class="selection" aria-label="Выбор игроков">
+   <div class="feature-wrap"><div class="feature-card" id="featured"></div><button class="model-button" id="view-model">◈ Посмотреть персонажа в 3D</button><a class="all-models" href="characters.html">Сравнить всех персонажей ↗</a></div>
+   <div class="team-panel">
+    <div class="panel-heading"><p class="eyebrow">СОБЕРИ СВОЮ ДВОЙКУ</p><span class="small-note">01 / ВЫБОР</span></div>
+    <div class="role-tabs" role="group" aria-label="Кого выбираем"><button id="role-player" class="role-tab active" aria-pressed="true"><span class="step">1</span> Твой игрок</button><button id="role-mate" class="role-tab" aria-pressed="false"><span class="step">2</span> Напарник-бот</button></div>
+    <div class="roster" id="roster"></div>
+    <div class="lineup"><div><span class="eyebrow">ТЫ</span><strong id="lineup-player"></strong></div><span class="plus">+</span><div><span class="eyebrow">НАПАРНИК</span><strong id="lineup-mate"></strong></div></div>
+    <div class="opponent-row"><span>Против <b id="opponents"></b></span><button id="shuffle" class="text-button" aria-label="Выбрать других соперников">Сменить ↻</button></div>
+    <button class="primary" id="play">НА ПЛОЩАДКУ <span>↗</span></button>
+    <div class="match-meta"><span>3 МИНУТЫ · ДВА КОЛЬЦА</span><span>2 И 3 ОЧКА</span></div>
+   </div>
+  </section>
+  <footer class="menu-footer"><div class="ref-info"><img src="assets/portraits/askar.jpg" alt="Аскар" class="ref-photo"><span><b>Аскар</b><small>Судья матча</small></span><span class="ref-badge">REF</span></div><p>Один игрок под твоим управлением.<br>Пасы, данки и свой суперприём.</p><span class="footer-mark">ДО ВСТРЕЧИ<br>ПОД КОЛЬЦОМ.</span></footer>
+ </main>
+ <section id="game-screen" class="hidden" aria-label="Баскетбольный матч">
+  <canvas id="court" aria-label="Объёмная баскетбольная площадка"></canvas>
+  <div class="game-top"><button id="pause" class="round-button" aria-label="Пауза">Ⅱ</button><div class="scoreboard"><div class="team-score home"><small>СВОИ</small><strong id="score-home">0</strong></div><div class="clock"><b id="clock">3:00</b><small id="shot-clock">24</small></div><div class="team-score away"><small>ГОСТИ</small><strong id="score-away">0</strong></div></div><button id="sound" class="round-button" aria-label="Выключить звук" aria-pressed="true">♪</button></div>
+  <div id="callout" class="callout" role="status"></div><div id="player-labels" aria-hidden="true"></div>
+  <div class="active-player"><img id="active-photo" alt=""><div><strong id="active-name"></strong><div class="stamina-track"><i id="stamina"></i></div></div><span id="active-ovr"></span></div>
+  <div id="charge-wrap" class="charge-wrap hidden"><span>ОТПУСТИ В ЗЕЛЁНОЙ ЗОНЕ</span><div class="charge-track"><i class="green-zone"></i><i id="charge-marker"></i></div></div>
+  <div class="controls"><div id="joystick" class="joystick" role="group" aria-label="Джойстик движения"><span class="joystick-cross"></span><div id="stick" class="stick"></div></div><div class="action-controls"><button id="super" class="action super" aria-label="Суперприём"><span id="super-icon">✦</span><b id="super-percent">0%</b><small>СУПЕР</small></button><button id="pass" class="action pass"><b>↗</b><small id="pass-label">ПАС</small></button><button id="shoot" class="action shoot"><b>◎</b><small id="shoot-label">БРОСОК</small></button></div></div>
+  <div class="keyboard-hint">WASD / стрелки — движение · Пробел — бросок · E — пас · Q — супер</div>
+  <div id="rotate" class="rotate hidden"><span>↻</span><h2>Поверни телефон</h2><p>Площадка и управление удобнее<br>в горизонтальном положении.</p><button id="portrait-continue" class="primary">Играть вертикально</button></div>
+ </section>
+ <dialog id="modal"><button class="dialog-close" id="close-modal" aria-label="Закрыть">×</button><div id="modal-content"></div></dialog>
+ <dialog id="model-modal"><button class="dialog-close" id="close-model" aria-label="Закрыть просмотр">×</button><div class="model-heading"><p class="eyebrow">ИГРОВАЯ 3D-МОДЕЛЬ</p><h2 id="model-name"></h2></div><canvas id="model-canvas" aria-label="Модель персонажа — поворачивайте пальцем"></canvas><div class="model-tools"><button id="model-full" class="active" aria-pressed="true">В полный рост</button><button id="model-face" aria-pressed="false">Лицо крупнее</button></div><p class="model-caption">Проведи пальцем, чтобы повернуть</p></dialog>
+ <div id="toast" class="toast" role="status"></div>
+ <noscript>Для игры включи JavaScript в настройках браузера.</noscript>
+ <script type="module" src="src/app.js"></script>
+</body></html>
