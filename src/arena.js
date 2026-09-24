@@ -3,30 +3,39 @@ export const COURT={halfLength:9.4,halfWidth:5.2,hoopX:8.5,hoopY:3.05,threeDista
 function mat(color,extra={}){return new T.MeshStandardMaterial({color,roughness:.96,...extra});}
 function box(scene,x,y,z,w,h,d,m){const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;scene.add(o);return o;}
 function courtTexture(){
- const c=document.createElement('canvas');c.width=2048;c.height=1152;const q=c.getContext('2d');q.fillStyle='#798878';q.fillRect(0,0,c.width,c.height);
+ const c=document.createElement('canvas');c.width=2048;c.height=1152;const q=c.getContext('2d');q.fillStyle='#a23f40';q.fillRect(0,0,c.width,c.height);
  let seed=45;function random(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;}
  for(let i=0;i<80000;i++){const v=random();q.fillStyle=v>.5?'#f8efd508':'#253d280e';q.fillRect(random()*2048,random()*1152,random()*2+.5,random()*2+.5);}
  const sx=2048/20.8,sy=1152/11.7;const X=x=>(x+10.4)*sx,Z=z=>(z+5.85)*sy;
- q.lineWidth=3.8;q.strokeStyle='#efe8d5';q.fillStyle='#32584f';
+ q.lineWidth=3.8;q.strokeStyle='#ffffff';q.fillStyle='#843435';
  for(const side of [-1,1]){const x0=side===-1?-9.4:5.4;q.fillRect(X(x0),Z(-2.15),4*sx,4.3*sy);}
  q.strokeRect(X(-9.4),Z(-5.2),18.8*sx,10.4*sy);q.beginPath();q.moveTo(X(0),Z(-5.2));q.lineTo(X(0),Z(5.2));q.stroke();q.beginPath();q.ellipse(X(0),Z(0),1.2*sx,1.2*sy,0,0,Math.PI*2);q.stroke();
  for(const side of [-1,1]){const start=side===-1?-9.4:5.4;q.strokeRect(X(start),Z(-2.15),4*sx,4.3*sy);q.beginPath();q.ellipse(X(side*5.4),Z(0),1.5*sx,1.5*sy,0,0,Math.PI*2);q.stroke();q.save();q.beginPath();q.rect(X(-9.38),Z(-5.18),18.76*sx,10.36*sy);q.clip();q.beginPath();q.ellipse(X(side*8.5),Z(0),6.15*sx,6.15*sy,0,side===-1?-Math.PI/2:Math.PI/2,side===-1?Math.PI/2:Math.PI*1.5);q.stroke();q.restore();q.beginPath();q.ellipse(X(side*8.5),Z(0),1.0*sx,1.0*sy,0,0,Math.PI*2);q.stroke();}
- q.save();q.translate(X(0),Z(0));q.rotate(-Math.PI/2);q.fillStyle='#e4d8b8';q.font='bold 21px Arial';q.textAlign='center';q.fillText('СВОЯ',0,-9);q.fillText('ЛИГА',0,15);q.restore();
+ q.save();q.translate(X(0),Z(0));q.rotate(-Math.PI/2);q.fillStyle='#ffffff';q.font='bold 21px Arial';q.textAlign='center';q.fillText('СВОЯ',0,-9);q.fillText('ЛИГА',0,15);q.restore();
  const tx=new T.CanvasTexture(c);tx.colorSpace=T.SRGBColorSpace;tx.anisotropy=4;return tx;
 }
-function bannerTexture(){const c=document.createElement('canvas');c.width=1024;c.height=160;const ctx=c.getContext('2d');ctx.fillStyle='#243b33';ctx.fillRect(0,0,1024,160);ctx.fillStyle='#e2b279';ctx.font='900 83px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('СВОЯ ЛИГА  /  2×2',512,84);const tx=new T.CanvasTexture(c);tx.colorSpace=T.SRGBColorSpace;return tx;}
+function bannerTexture(){const c=document.createElement('canvas');c.width=1024;c.height=160;const ctx=c.getContext('2d');ctx.fillStyle='#243b33';ctx.fillRect(0,0,1024,160);ctx.fillStyle='#ffffff';ctx.font='900 60px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('ПЛОЩАДКА ЛИЦЕЯ № 2',512,84);const tx=new T.CanvasTexture(c);tx.colorSpace=T.SRGBColorSpace;return tx;}
 export function createArena(scene){
  scene.background=new T.Color(0xb8c8cd);scene.fog=new T.Fog(0xb8c8cd,30,95);
  scene.add(new T.HemisphereLight(0xe8f2ff,0x586653,1.5));const sun=new T.DirectionalLight(0xffe3bd,2.6);sun.position.set(-7,15,7);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-15;sun.shadow.camera.right=15;sun.shadow.camera.top=12;sun.shadow.camera.bottom=-12;sun.shadow.normalBias=.012;sun.shadow.bias=-.0003;scene.add(sun);
  const ground=new T.Mesh(new T.PlaneGeometry(180,180),mat(0x859582));ground.rotation.x=-Math.PI/2;ground.position.y=-.04;ground.receiveShadow=true;scene.add(ground);
  const floor=new T.Mesh(new T.PlaneGeometry(20.8,11.7),mat(0xffffff,{map:courtTexture()}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
- const concrete=mat(0x85847c),metal=mat(0x515b59,{metalness:.55,roughness:.48}),orange=mat(0xd06a27,{metalness:.38,roughness:.45}),fence=mat(0x7c8580,{metalness:.45}),cream=mat(0xe1ddc4);
+ const concrete=mat(0x85847c),metal=mat(0x515b59,{metalness:.55,roughness:.48}),orange=mat(0xd06a27,{metalness:.38,roughness:.45}),fence=mat(0x267340,{metalness:.15}),cream=mat(0xe1ddc4);
  const glass=mat(0xc4dde0,{transparent:true,opacity:.28,roughness:.15,metalness:.1,side:T.DoubleSide,depthWrite:false});
  box(scene,0,.23,-6.35,24,.5,.4,concrete);box(scene,-12,.2,0,.4,.4,14,concrete);box(scene,12,.2,0,.4,.4,14,concrete);
- for(let x=-12;x<=12;x+=3){box(scene,x,1.65,-6.35,.06,3.3,.06,metal);}
+ for(let x=-12;x<=12;x+=3){box(scene,x,1.65,-6.35,.065,3.3,.065,fence);}
  for(let y=.7;y<=3.3;y+=.38){box(scene,0,y,-6.35,24,.018,.018,fence);}
  for(let x=-12;x<=12;x+=.4){box(scene,x,1.8,-6.35,.012,2.7,.012,fence);}
- const banner=new T.Mesh(new T.PlaneGeometry(7,1.09),new T.MeshStandardMaterial({map:bannerTexture(),roughness:1}));banner.position.set(0,2.05,-6.30);scene.add(banner);
+ // Side fences frame the court; the camera side remains open for visibility.
+ for(const side of [-1,1]){
+  for(let z=-6.35;z<=5.8;z+=3)box(scene,side*11.8,1.65,z,.065,3.3,.065,fence);
+  const vertices=[];
+  for(let y=.6;y<=3.3;y+=.38)vertices.push(side*11.8,y,-6.35,side*11.8,y,5.8);
+  for(let z=-6.35;z<=5.8;z+=.38)vertices.push(side*11.8,.5,z,side*11.8,3.3,z);
+  const wire=new T.BufferGeometry();wire.setAttribute('position',new T.Float32BufferAttribute(vertices,3));
+  scene.add(new T.LineSegments(wire,new T.LineBasicMaterial({color:0x267340})));
+ }
+ const banner=new T.Mesh(new T.PlaneGeometry(8.5,1.32),new T.MeshStandardMaterial({map:bannerTexture(),roughness:1}));banner.position.set(0,2.05,-6.30);scene.add(banner);
  for(const side of [-1,1]){
   box(scene,side*9.8,1.65,0,.15,3.3,.16,metal);box(scene,side*9.3,3.13,0,1.1,.12,.12,metal);
   box(scene,side*9.00,3.53,0,.055,1.16,1.8,glass);

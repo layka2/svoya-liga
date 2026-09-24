@@ -9,3 +9,7 @@ export const APPEARANCE={
  piniv:{width:.104,height:.145,jaw:.82,chin:.65,cheek:.009,nose:.025,noseWidth:.014,noseY:-.021,eyeGap:.044,eyeY:.025,eyeWidth:.026,eyeHeight:.009,iris:0x708c97,mouth:.025,lip:.0045,smile:.0005,open:0,ears:.98,build:1.04,shoulders:1.0,hair:'tousled',hairColor:0x6b563e,skin:0xd7ac97,brow:.0037,neck:.067,seed:66},
  askar:{width:.091,height:.151,jaw:.68,chin:.51,cheek:.003,nose:.036,noseWidth:.013,noseY:-.024,eyeGap:.040,eyeY:.026,eyeWidth:.027,eyeHeight:.0105,iris:0x34291f,mouth:.025,lip:.0045,smile:.002,open:0,ears:1.1,build:.88,shoulders:.95,hair:'spikes',hairColor:0x403123,skin:0xcdaa8c,brow:.004,neck:.057,seed:55}
 };
+
+// Separate, fictional school players; no reused photo faces.
+APPEARANCE.mate={...APPEARANCE.gabar,width:.102,height:.150,jaw:.86,chin:.67,build:1.02,shoulders:1.03,hair:'crop',hairColor:0x302923,skin:0xc79a7e,iris:0x514639,smile:0,seed:108};
+APPEARANCE.guest={...APPEARANCE.kempil,width:.096,height:.15,jaw:.78,build:.97,hair:'swept',hairColor:0x796349,skin:0xd6b198,iris:0x688075,seed:109};
