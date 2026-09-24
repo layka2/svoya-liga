@@ -2,14 +2,15 @@
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 export const RELEASE_CENTER = .72;
 
-export function shotProfile({rating, distance, kind = 'mid', timing = RELEASE_CENTER, contest = 0, movement = 0, stamina = 100, settled = 1, boost = 0, catchBonus = false}) {
+export function shotProfile({rating, distance, kind = 'mid', timing = RELEASE_CENTER, contest = 0, movement = 0, stamina = 100, settled = 1, boost = 0, catchBonus = false, releaseAid = 0}) {
   rating = clamp(rating, 1, 99);
   contest = clamp(contest, 0, 1);
   movement = clamp(movement, 0, 1);
   const fatigue = 1 - clamp(stamina, 0, 100) / 100;
-  const greenWidth = clamp(.044 + rating * .00026 - contest * .023 - fatigue * .018, .027, .073);
+  releaseAid = clamp(releaseAid, 0, .012);
+  const greenWidth = clamp(.044 + rating * .00026 - contest * .023 - fatigue * .018 + releaseAid, .027, .085);
   const error = Math.abs(timing - RELEASE_CENTER);
-  const quality = Math.exp(-Math.pow(error / (kind === 'layup' || kind === 'dunk' ? .235 : .185), 2));
+  const quality = Math.exp(-Math.pow(error / ((kind === 'layup' || kind === 'dunk' ? .235 : .185) + releaseAid * 2.3), 2));
   const ceilings = {three: .12 + rating * .0046, mid: .23 + rating * .0053, layup: .44 + rating * .0042, dunk: .48 + rating * .0046};
   let chance = (ceilings[kind] ?? ceilings.mid) * (.035 + .965 * quality);
   chance *= 1 - contest * (kind === 'dunk' ? .55 : .76);

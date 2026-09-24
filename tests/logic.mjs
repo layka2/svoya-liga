@@ -64,6 +64,24 @@ try{
  g=createMatch();g.shotClock=.01;g.update(.02);assert.equal(g.ball.owner.team,1);assert.equal(g.shotClock,24);
  g=createMatch();g.clock=0;g.score=[2,2];g.update(.02);assert(g.overtime);g.addScore(g.user,2,false,null);assert(g.result.won&&g.result.completed);assert.deepEqual(g.result.score,[4,2]);console.log('PASS shot clock and completed sudden death');
  for(const hero of PLAYERS){g=createMatch([hero.id,'mate','guest','aziom']);g.user.energy=100;assert(g.activateSuper());assert(!g.activateSuper());assert.equal(g.user.energy,0);}console.log('PASS all six super abilities');
+ // Calling a screen never freezes a defender; only contact with a set screener does.
+ g=createMatch();g.time=5;g.user.x=0;g.user.z=0;g.players[1].x=-1;g.players[1].z=2;g.players[2].x=1.3;g.players[2].z=0;g.players[3].x=-8;g.players[3].z=-4;
+ assert(g.callScreen());assert(!g.callScreen());assert.equal(g.players[2].stunUntil,0);assert.equal(g.players[1].stats.screens||0,0);
+ for(let i=0;i<270&&g.screenPlays[0]?.phase==='approach';i++){g.time+=1/60;g.updatePlays();g.ai(g.players[1],1/60);}
+ let play=g.screenPlays[0],screener=g.players[1];assert.equal(play.phase,'set');g.time+=.24;screener.vx=screener.vz=0;g.updatePlays();const planted={x:screener.x,z:screener.z};
+ g.players[2].x=screener.x+.30;g.players[2].z=screener.z;g.players[2].vx=-1.5;g.players[2].vz=0;g.resolveCollisions();assert.equal(screener.stats.screens,1);assert.equal(screener.x,planted.x);assert(g.players[2].stunUntil>g.time);assert(g.screenPlays[0].engaged);assert.equal(g.score[0],0);
+ g.time+=.3;g.updatePlays();assert.equal(g.screenPlays[0].phase,'roll');g.giveBall(g.players[2]);assert(!g.screenPlays[0]);assert(!screener.screenSet);
+ // Tactical badges apply to the allied team, require their action and keep shot ceilings.
+ g=createMatch(['kempil','mate','aziom','guest']);g.time=2;g.user.x=2;g.user.z=0;g.players[2].x=g.players[3].x=-8;const normal=g.shotInfo(g.user);
+ g.badges=new Set(['catch']);assert.equal(g.shotInfo(g.user).chance,normal.chance);g.user.catchUntil=3;assert(g.shotInfo(g.user).chance>normal.chance);assert(g.shotInfo(g.user).chance<=.68);assert(g.shotInfo(g.user,.1).chance<.06);assert(!g.hasBadge(g.players[2],'catch'));
+ g.badges=new Set(['steady']);g.user.catchUntil=0;assert(g.shotInfo(g.user).greenWidth>normal.greenWidth);g.user.settled=0;assert.equal(g.shotInfo(g.user).greenWidth,normal.greenWidth);
+ g=createMatch();g.time=2;g.badges=new Set(['rest']);g.user.stamina=50;g.move(g.user,0,0,1);assert.equal(g.user.stamina,59);
+ g.badges=new Set(['defense']);g.user.stamina=50;g.user.energy=5;g.defensiveReward(g.user);assert.equal(g.user.stamina,60);assert.equal(g.user.energy,17);
+ g.badges=new Set(['step']);assert(g.crossover());g.user.stamina=17;assert(g.burst());assert.equal(g.user.stamina,5);assert(Math.abs(g.user.burstUntil-g.time-.78)<1e-9);
+ g=createMatch();g.time=2;g.user.x=6.5;g.user.z=0;g.players[2].x=g.players[3].x=-8;g.badges=new Set(['rebound']);const beforeRebound=g.shotInfo(g.user).chance;g.user.reboundUntil=3;assert(g.shotInfo(g.user).chance>beforeRebound);g.time=4;assert.equal(g.shotInfo(g.user).chance,beforeRebound);
+ g=createMatch(['laika','mate','aziom','guest']);g.time=2;g.badges=new Set(['catch']);g.user.x=3;g.user.z=0;g.user.catchUntil=3;g.user.superUntil=9;g.shoot(g.user,.72);assert.equal(g.user.superUntil,9,'A badge must not consume a different super ability');
+ g=createMatch();g.matchMode='crown';g.targetScore=7;g.clock=90;g.score=[6,4];g.addScore(g.user,2,false,null);assert(g.result.completed&&g.result.won);assert.equal(g.result.mode,'crown');assert.equal(g.clock,90);
+ console.log('PASS physical screen, roll, possession cancellation, six conditional badges and score-limit victory');
  // Exercise all four AI players through complete seeded matches and real rule transitions.
  const summaries=[];
  for(const [seed,ids] of [[624,['piniv','mate','aziom','guest']],[725,['laika','gabar','kempil','demidok']],[823,['aziom','mate','demidok','guest']]]){

@@ -1,5 +1,5 @@
 import * as T from '../vendor/three.module.min.js';
-import {APPEARANCE} from './appearance.js?v=0.4.0';
+import {APPEARANCE} from './appearance.js?v=0.5.0';
 const TAU=Math.PI*2;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*t;
@@ -201,7 +201,7 @@ function limbIK(upper,lower,target,pole,l1,l2){
 }
 export function poseCharacter(root,state={}){
  const a=root.userData,time=state.time||0,speed=state.speed||0,moving=Math.min(1,speed/4.7),phase=state.gait||0,air=state.air||0;
- const defending=!!state.defending,own=!!state.own,crouch=(air>.15?.018:defending?.17:own?.115:.070)+moving*.10+(state.crouch||0);
+ const defending=!!state.defending,own=!!state.own,crouch=(air>.15?.018:state.screen?.14:defending?.17:own?.115:.070)+moving*.10+(state.crouch||0);
  const stride=(.14+moving*.18)*moving,side=state.sideways||0,forward=state.forward??1;
  a.body.position.set(Math.sin(phase)*moving*.014,air-crouch+Math.abs(Math.sin(phase))*.020*moving+Math.sin(time*2.5)*.004,0);
  a.body.rotation.set((defending?.035:own?.10:.035)+moving*.055,Math.sin(phase)*moving*.055,(state.lean||0)*.06);
@@ -209,7 +209,7 @@ export function poseCharacter(root,state={}){
  const airborne=air>.10;
  for(let i=0;i<2;i++){
   const sign=i===0?-1:1,step=phase+i*Math.PI,swing=Math.sin(step),lift=Math.max(0,swing)*(.12+moving*.10)*moving;
-  const spread=defending?.165:own?.13:.105;
+  const spread=state.screen?.18:defending?.165:own?.13:.105;
   const foot=state.feetLocal?new T.Vector3(...state.feetLocal[i]):new T.Vector3(sign*spread+Math.cos(step)*stride*side,.034+lift+air,Math.cos(step)*stride*forward+.045);
   if(airborne){foot.y+=i===1?.16:.08;foot.z-=i===1?.18:.10;}
   limbIK(a.legs[i],a.knees[i],toBody(foot),new T.Vector3(0,.12,1),.403,.441);
@@ -224,6 +224,7 @@ export function poseCharacter(root,state={}){
   const other=1-index,sign=other===0?-1:1;limbIK(a.arms[other],a.elbows[other],toBody(new T.Vector3(sign*.33,1.08,.22)),new T.Vector3(sign*.20,-.70,-.32),.282,.27);
   a.body.rotation.z+=d.hip;
  }
+ if(state.screen){for(let i=0;i<2;i++){const sign=i===0?-1:1;limbIK(a.arms[i],a.elbows[i],toBody(new T.Vector3(sign*.055,.97,.19)),new T.Vector3(sign*.2,-.8,-.3),.282,.27);}}
  if(state.ballLocal){
   const ball=new T.Vector3(...state.ballLocal),hand=state.hand||1,one=state.oneHand;
   for(let i=0;i<2;i++){
