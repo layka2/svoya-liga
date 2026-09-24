@@ -1,5 +1,5 @@
 import * as T from '../vendor/three.module.min.js';
-import {APPEARANCE} from './appearance.js?v=0.3.0';
+import {APPEARANCE} from './appearance.js?v=0.4.0';
 const TAU=Math.PI*2;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*t;
@@ -153,7 +153,7 @@ export function createCharacter(p,team=0){
  mesh(body,ringsGeometry([[1.48,a.neck*1.12,.058],[1.52,a.neck,.056],[1.57,a.neck*.85,.052]],24),skin);
  mesh(body,ringsGeometry([[.958,.173*a.build,.115*a.build],[.999,.173*a.build,.115*a.build]],28),p.referee?dark:cloth);
  const head=createHead(p,a);head.position.y=1.68;head.scale.set(.90,.82,.88);body.add(head);
- const arms=[],legs=[],elbows=[],knees=[];
+ const arms=[],legs=[],elbows=[],knees=[],hands=[],feet=[];
  for(const s of [-1,1]){
   const arm=new T.Group();arm.position.set(s*.200*a.shoulders*a.build,1.425,0);arm.rotation.z=s*.055;arm.rotation.x=-.05;body.add(arm);arms.push(arm);
   ellipsoid(arm,skin,0,-.012,0,.053*a.build,.050,.050*a.build);
@@ -162,7 +162,7 @@ export function createCharacter(p,team=0){
   if(p.referee)mesh(arm,ringsGeometry([[-.012,.053,.054],[-.10,.059,.057],[-.145,.054,.054]],24),cloth);
   const forearm=new T.Group();forearm.position.y=-.282;forearm.rotation.x=-.16;arm.add(forearm);elbows.push(forearm);
   mesh(forearm,ringsGeometry([[0,.034,.034],[-.06,.040,.037],[-.15,.030,.028],[-.25,.022,.021]].map(([y,x,z])=>[y,x*a.build,z*a.build]),22),skin);
-  const hand=new T.Group();hand.position.set(0,-.27,.005);forearm.add(hand);
+  const hand=new T.Group();hand.position.set(0,-.27,.005);forearm.add(hand);hands.push(hand);
   ellipsoid(hand,skin,0,-.015,0,.030,.043,.016);
   for(let f=0;f<4;f++){const x=-.021+f*.014,len=[.047,.053,.050,.040][f];curve(hand,skin,[[x,-.031,.001],[x,-.053,.010],[x,-.031-len,.013]],.0068,6);}
   curve(hand,skin,[[s*.022,.005,.004],[s*.041,-.015,.020],[s*.038,-.032,.023]],.009,8);
@@ -176,7 +176,7 @@ export function createCharacter(p,team=0){
   const calf=new T.Group();calf.position.y=-.403;leg.add(calf);knees.push(calf);
   mesh(calf,ringsGeometry([[0,.043,.040],[-.09,.054,.043],[-.18,.047,.038],[-.30,.029,.030],[-.40,.025,.025]].map(([y,x,z])=>[y,x*a.build,z*a.build,y>-.23?-.006:0]),24),skin);
   mesh(calf,ringsGeometry([[-.28,.032,.031],[-.39,.029,.029]],22),sock);
-  const shoe=new T.Group();shoe.position.set(0,-.441,.035);calf.add(shoe);
+  const shoe=new T.Group();shoe.position.set(0,-.441,.035);calf.add(shoe);feet.push(shoe);
   ellipsoid(shoe,dark,0,.015,.008,.050,.043,.113);ellipsoid(shoe,sole,0,-.013,.013,.052,.014,.116);
   ellipsoid(shoe,rubber,0,-.022,.013,.050,.007,.111);
   for(let f=0;f<4;f++)curve(shoe,trim,[[-.025,.044-f*.001,-.012+f*.012],[0,.048-f*.001,f*.012],[.025,.044-f*.001,-.012+f*.012]],.002,5);
@@ -187,16 +187,60 @@ export function createCharacter(p,team=0){
  batch(body);
  const shadow=new T.Mesh(new T.CircleGeometry(.32,32),new T.MeshBasicMaterial({color:0x101615,transparent:true,opacity:.23,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.010;root.add(shadow);
  const ring=new T.Mesh(new T.RingGeometry(.36,.382,40),new T.MeshBasicMaterial({color:team===0?0xf6d091:0x87d5ce,transparent:true,opacity:.85,side:T.DoubleSide,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.y=.018;root.add(ring);ring.visible=!p.referee;
- root.userData={p,body,head,arms,legs,elbows,knees,ring,shadow,appearance:a};return root;
+ root.userData={p,body,head,arms,legs,elbows,knees,hands,feet,ring,shadow,appearance:a};return root;
 }
-export function animateCharacter(root,time,speed,air=0,shooting=0,dribbling=false,shotKind='mid'){
- const a=root.userData,moving=Math.min(1,speed),phase=time*10,stride=Math.sin(phase)*moving*.43;
- a.legs[0].rotation.x=stride-.035;a.legs[1].rotation.x=-stride-.035;
- a.arms[0].rotation.x=-stride*.7;a.arms[1].rotation.x=stride*.7;
- for(let i=0;i<2;i++){if(a.knees)a.knees[i].rotation.x=.065+Math.max(0,Math.sin(phase+i*Math.PI))*.88*moving;if(a.elbows)a.elbows[i].rotation.x=-.14-moving*.28;a.arms[i].rotation.z=(i===0?-1:1)*(.055+moving*.03);}
- if(dribbling){a.arms[1].rotation.x=-.33+Math.sin(time*13)*.12;if(a.elbows)a.elbows[1].rotation.x=-.38+Math.sin(time*13)*.20;}
- if(shooting>0){for(let i=0;i<2;i++){const balance=i===0&&(shotKind==='dunk'||shotKind==='layup');a.arms[i].rotation.x=-.10-(balance?1.1:2.45)*shooting;if(a.elbows)a.elbows[i].rotation.x=-(balance?.6:.3)*shooting;}}
- a.body.position.y=air-.012+Math.abs(Math.sin(phase))*.015*moving;a.body.rotation.z=stride*.028;a.body.rotation.y=Math.sin(phase)*moving*.065;a.body.rotation.x=.025+moving*.055;
- a.head.rotation.y=Math.sin(time*.65)*.018*(1-moving);a.shadow.scale.setScalar(1-air*.16);a.shadow.material.opacity=Math.max(.06,.23-air*.1);
+const DOWN=new T.Vector3(0,-1,0),UP=new T.Vector3(0,1,0);
+// Two bone IK keeps each palm on its target and planted feet on the court.
+function limbIK(upper,lower,target,pole,l1,l2){
+ const origin=upper.position,delta=target.clone().sub(origin),d=Math.min(l1+l2-.001,Math.max(.025,delta.length())),dir=delta.normalize();
+ const along=(l1*l1-l2*l2+d*d)/(2*d),height=Math.sqrt(Math.max(0,l1*l1-along*along));
+ const outward=pole.clone().sub(dir.clone().multiplyScalar(pole.dot(dir)));if(outward.lengthSq()<.0001)outward.set(0,0,1);outward.normalize();
+ const bend=origin.clone().addScaledVector(dir,along).addScaledVector(outward,height),wrist=origin.clone().addScaledVector(dir,d);
+ upper.quaternion.setFromUnitVectors(DOWN,bend.clone().sub(origin).normalize());
+ const local=wrist.sub(bend).normalize().applyQuaternion(upper.quaternion.clone().invert());lower.quaternion.setFromUnitVectors(DOWN,local);
+}
+export function poseCharacter(root,state={}){
+ const a=root.userData,time=state.time||0,speed=state.speed||0,moving=Math.min(1,speed/4.7),phase=state.gait||0,air=state.air||0;
+ const defending=!!state.defending,own=!!state.own,crouch=(air>.15?.018:defending?.17:own?.115:.070)+moving*.10+(state.crouch||0);
+ const stride=(.14+moving*.18)*moving,side=state.sideways||0,forward=state.forward??1;
+ a.body.position.set(Math.sin(phase)*moving*.014,air-crouch+Math.abs(Math.sin(phase))*.020*moving+Math.sin(time*2.5)*.004,0);
+ a.body.rotation.set((defending?.035:own?.10:.035)+moving*.055,Math.sin(phase)*moving*.055,(state.lean||0)*.06);
+ const inverseBody=a.body.quaternion.clone().invert(),toBody=v=>v.clone().sub(a.body.position).applyQuaternion(inverseBody);
+ const airborne=air>.10;
+ for(let i=0;i<2;i++){
+  const sign=i===0?-1:1,step=phase+i*Math.PI,swing=Math.sin(step),lift=Math.max(0,swing)*(.12+moving*.10)*moving;
+  const spread=defending?.165:own?.13:.105;
+  const foot=state.feetLocal?new T.Vector3(...state.feetLocal[i]):new T.Vector3(sign*spread+Math.cos(step)*stride*side,.034+lift+air,Math.cos(step)*stride*forward+.045);
+  if(airborne){foot.y+=i===1?.16:.08;foot.z-=i===1?.18:.10;}
+  limbIK(a.legs[i],a.knees[i],toBody(foot),new T.Vector3(0,.12,1),.403,.441);
+  if(a.feet){const q=a.body.quaternion.clone().multiply(a.legs[i].quaternion).multiply(a.knees[i].quaternion);a.feet[i].quaternion.copy(q.invert());a.feet[i].rotateX(airborne?.25:Math.max(0,swing)*moving*.24);}
+  const handTarget=new T.Vector3(sign*(defending?.36:.27),defending?1.15:.88,defending?.28:-Math.sin(step)*moving*.20+.035);
+  limbIK(a.arms[i],a.elbows[i],toBody(handTarget),new T.Vector3(sign*.26,-.70,-.55),.282,.27);
+  if(a.hands)a.hands[i].rotation.set(0,0,0);
+ }
+ if(state.dribble){
+  const d=state.dribble,index=d.hand>0?1:0,target=new T.Vector3(...d.palm);limbIK(a.arms[index],a.elbows[index],toBody(target),new T.Vector3(d.hand*.24,-.70,-.48),.282,.27);
+  if(a.hands)a.hands[index].rotation.x=.30+(d.contact?.35:0);
+  const other=1-index,sign=other===0?-1:1;limbIK(a.arms[other],a.elbows[other],toBody(new T.Vector3(sign*.33,1.08,.22)),new T.Vector3(sign*.20,-.70,-.32),.282,.27);
+  a.body.rotation.z+=d.hip;
+ }
+ if(state.ballLocal){
+  const ball=new T.Vector3(...state.ballLocal),hand=state.hand||1,one=state.oneHand;
+  for(let i=0;i<2;i++){
+   const sign=i===0?-1:1;if(one&&sign!==hand)continue;
+   const target=ball.clone().add(new T.Vector3(one?0:sign*.115,state.overhead?.09:-.045,state.overhead?-.015:-.035));
+   limbIK(a.arms[i],a.elbows[i],toBody(target),new T.Vector3(sign*.28,-.50,state.overhead?-.22:-.5),.282,.27);
+   if(a.hands)a.hands[i].rotation.x=state.overhead?-.12:.45;
+  }
+ }
+ if(state.followThrough){
+  const strength=state.followThrough;for(let i=0;i<2;i++){const sign=i===0?-1:1,target=new T.Vector3(sign*(i===1?.14:.23),air+1.42+.54*strength,.30);limbIK(a.arms[i],a.elbows[i],toBody(target),new T.Vector3(sign*.3,-.5,-.25),.282,.27);if(a.hands)a.hands[i].rotation.x=.95*strength;}
+ }
+ if(state.block){for(let i=0;i<2;i++){const sign=i===0?-1:1;limbIK(a.arms[i],a.elbows[i],toBody(new T.Vector3(sign*.22,air+1.97,.10)),new T.Vector3(sign,0,-.15),.282,.27);}}
+ a.head.rotation.y=(state.look||0)*.25;a.head.rotation.x=state.overhead?-.14:own?.045:0;
+ a.shadow.scale.setScalar(Math.max(.68,1-air*.12));a.shadow.material.opacity=Math.max(.07,.23-air*.1);
+}
+export function animateCharacter(root,time,speed,air=0,shooting=0,dribbling=false){
+ poseCharacter(root,{time,gait:time*6,speed:speed*4.7,air,own:dribbling,followThrough:shooting});
 }
 export function disposeObject(root){const geometries=new Set(),materials=new Set(),textures=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>{if(m.map)textures.add(m.map);m.dispose();});textures.forEach(t=>t.dispose());}
